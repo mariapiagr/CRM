@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CRM Inmobiliario</title>
+<style>
+:root{
+  --bg:#f4f1ea; --panel:#ffffff; --ink:#0e1a33; --sub:#6b7280; --line:#e3ded2;
+  --navy:#0a1a3b; --red:#e0241a; --accent:#e0241a; --accent-ink:#ffffff; --danger:#b3452f;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#14171c; --panel:#1d2128; --ink:#eceae6; --sub:#9aa09b; --line:#33383a; }
+}
+:root[data-theme="dark"]{ --bg:#14171c; --panel:#1d2128; --ink:#eceae6; --sub:#9aa09b; --line:#33383a; }
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100%}
+header{background:var(--navy);color:#fff;padding:18px 20px 14px;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+.brandbar{display:flex;align-items:center;gap:12px;max-width:1100px;margin:0 auto}
+.mark{width:34px;height:34px;border-radius:50%;flex:none;object-fit:contain;background:#fff}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.grouphead{text-align:center;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding:6px}
+.g-comprador{background:color-mix(in srgb, #2f6fe0 14%, transparent);color:#2f6fe0}
+.g-vendedor{background:color-mix(in srgb, var(--red) 14%, transparent);color:var(--red)}
+.brand-name{font-size:16px;font-weight:800;letter-spacing:.02em}
+.brand-name b{color:var(--red)}
+.brand-tag{font-size:12px;color:#c7cbd8;margin-top:1px}
+.redline{height:4px;background:var(--red)}
+nav{display:flex;gap:6px;padding:12px 20px;overflow-x:auto;max-width:1100px;margin:0 auto}
+nav button{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:20px;font-size:14px;cursor:pointer;white-space:nowrap}
+nav button.active{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{padding:0 20px 40px;max-width:1100px;margin:0 auto}
+.toolbar{display:flex;gap:10px;align-items:center;margin:8px 0 14px;flex-wrap:wrap}
+.toolbar input[type=text]{flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-size:14px;cursor:pointer}
+.btn.secondary{background:transparent;color:var(--ink);border-color:var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:600px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--sub);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.02em}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:color-mix(in srgb, var(--accent) 6%, transparent)}
+.empty{padding:30px;text-align:center;color:var(--sub)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;z-index:10}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border-radius:14px;padding:20px;width:100%;max-width:480px;margin-top:20px}
+.modal h2{margin:0 0 14px;font-size:17px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font-size:14px;font-family:inherit}
+.field textarea{min-height:60px;resize:vertical}
+.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.status{font-size:12px;color:var(--sub);text-align:center;padding:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:16px}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stat .n{font-size:22px;font-weight:700}
+.stat .l{font-size:12px;color:var(--sub);margin-top:2px}
+tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:none;background:color-mix(in srgb, var(--red) 6%, transparent)}
+.checkrow{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;font-size:13.5px;margin-bottom:4px;cursor:pointer}
+.checkrow.done{background:color-mix(in srgb, #3fa34d 20%, transparent)}
+.checkrow input{width:16px;height:16px;flex:none}
+.brandfooter{padding:18px 20px 30px;text-align:center;font-size:11px;color:var(--sub);border-top:1px solid var(--line);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brandbar">
+    <img class="mark" alt="RE/MAX Estero" src="data:image/png;base64,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">
+    <div>
+      <div class="brand-name">RE<b>/MAX</b> ESTERO</div>
+      <div class="brand-tag">Sistema de gestión inmobiliaria</div>
+    </div>
+  </div>
+</header>
+<div class="redline"></div>
+<nav id="tabs"></nav>
+<main>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Buscar...">
+    <label id="hideDoneWrap" style="display:none;align-items:center;gap:6px;font-size:13px;color:var(--sub);white-space:nowrap"><input type="checkbox" id="hideDone">Ocultar completadas</label>
+    <button class="btn" id="addBtn">+ Nuevo</button>
+  </div>
+  <div class="card"><div id="tableWrap"></div></div>
+  <div class="status" id="status"></div>
+</main>
+<footer class="brandfooter">RE/MAX ESTERO · Mitre 202, Santiago del Estero · Corredor Responsable Mariano Alfonso Acosta · Matrícula CCPISE 238</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle"></h2>
+    <form id="form"></form>
+    <datalist id="propList"></datalist>
+    <div class="modal-actions">
+      <button class="btn secondary" id="deleteBtn" style="display:none;color:var(--danger);border-color:var(--danger)">Eliminar</button>
+      <button class="btn secondary" id="gcalBtn" type="button" style="display:none">📅 Recordatorio</button>
+      <div style="flex:1"></div>
+      <button class="btn secondary" id="cancelBtn" type="button">Cancelar</button>
+      <button class="btn" id="saveBtn" type="submit" form="form">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const AGENDA_VERDE=["Presentación de ACM","Pre Listing","Pre-Buying","Pop-by","Farming","Visitas","Firma Autorización/Reserva/Baja precio","Cierres"];
+const AGENDA_AMARILLO=["Prospección telefónica","Confección de ACM","Redes Sociales","Reportes","Búsquedas","Actualizar tracking","Reuniones","Responder consultas","Carga de propiedades","Mejorar publicaciones","Pasos para cierres","Fotos propiedades","Otro"];
+const AGENDA_ROJO=["Actividad física","Recreación","Trámites personales","Comidas","Tareas del hogar","Tiempo en familia"];
+function actColor(name){
+  if(AGENDA_VERDE.includes(name)) return "#3fa34d";
+  if(AGENDA_AMARILLO.includes(name)) return "#e6c229";
+  if(AGENDA_ROJO.includes(name)) return "#e0241a";
+  return "transparent";
+}
+const PROCESOS=["Agendar contacto (base de datos)","Ficha de pre-listing","Fotos para ACM","Presentación ACM y gastos al cliente","Firma de autorización y carpeta","Falta de documentación (escritura/plano/impuesto)","¿Tiene escritura?","¿Tiene boleto?","¿Hay sucesión?","¿Declaratoria de herederos?","¿Bien inscripto?","¿Estado parcelario hecho?","Informes dominio/inhibición de causantes","Número de expediente","Registración N° abogado","Texto predeterminado para consultas","Instagram / Facebook","Flyer / historia / video","Sem. 3: informe + campaña","Sem. 4: informe mensual + competencia","Sem. 5: nuevo contenido/fotos","Sem. 7: informe con precio modificado","Fotos en visitas/marketing","Sem. 8: control precio/consultas","Repetir: publicidad/precio/informe","Informar comisión y gastos","Reserva firmada / DNI / copias","Cambio de estado en red RE/MAX","Consultar monto escrituración","Enviar documentación a escribanía","Informes dominio/parcelario/libre deuda","Libre deuda servicios/municipal/expensas","Recibo-factura / regalo","Presentarse con DNI y llaves","¿Fecha en escribanía?","¿Se entregaron llaves?","Seguimiento del proceso","15 días: ¿se cerró?"];
+function progreso(r){
+  const steps=SCHEMAS.actividad.fields.filter(f=>f.k!=="cliente_propiedad");
+  const done=steps.filter(f=>r[f.k]==="Sí").length;
+  return done+"/"+steps.length;
+}
+const SCHEMAS = {
+  clientes: { title:"Clientes", columns:["nombre","tipo","estado","telefono","barrio","tipo_prop_busca","monto_estimado","ya_compro","barrio_venta","profesion","ultimo_contacto","notas"],
+    groupLabels:["","Comprador","Vendedor",""], groupSpans:[4,4,1,3],
+    fields:[
+      {k:"nombre",l:"Nombre",t:"text",req:true},
+      {k:"tipo",l:"Tipo",t:"select",o:["Comprador","Vendedor","Ambos"]},
+      {k:"estado",l:"Estado",t:"select",o:["Prospecto","Activo","Re-activado","Reservado","Cancelado","Cerrado"]},
+      {k:"telefono",l:"Teléfono",t:"text"},
+      {k:"barrio",l:"Barrio de interés",t:"text"},
+      {k:"tipo_prop_busca",l:"Tipo de propiedad que busca",t:"select",o:["Casa","Departamento","Terreno","PH","Cochera","Local","Galpón","Finca","Campo","Oficina","Otro"]},
+      {k:"monto_estimado",l:"Monto estimado (USD)",t:"number",money:true},
+      {k:"ya_compro",l:"¿Ya compró?",t:"select",o:["No","Sí"]},
+      {k:"barrio_venta",l:"Barrio de la propiedad en venta",t:"text"},
+      {k:"profesion",l:"Profesión",t:"text"},
+      {k:"ultimo_contacto",l:"Último contacto",t:"date"},
+      {k:"notas",l:"Notas",t:"textarea"},
+    ]},
+  propiedades: { title:"Propiedades", columns:["codigo","propietario","direccion","tipo","_superficie","precio_publicacion","estado","_vencimiento"], colorField:"estado", colorFn:propEstadoColor,
+    fields:[
+      {k:"codigo",l:"Código",t:"text",req:true},
+      {k:"propietario",l:"Propietario",t:"text",req:true},
+      {k:"direccion",l:"Dirección",t:"text"},
+      {k:"tipo",l:"Tipo",t:"select",o:["Casa","Departamento","Terreno","PH","Cochera","Local","Galpón","Finca","Campo","Oficina","Otro"]},
+      {k:"barrio",l:"Barrio",t:"text"},
+      {k:"m2_terreno",l:"M² terreno",t:"number"},
+      {k:"m2_cubiertos",l:"M² cubiertos",t:"number"},
+      {k:"m2_semicubiertos",l:"M² semicubiertos",t:"number"},
+      {k:"m2_descubiertos",l:"M² descubiertos",t:"number"},
+      {k:"dormitorios",l:"Dormitorios",t:"number"},
+      {k:"banos",l:"Baños",t:"number"},
+      {k:"precio_publicacion",l:"Precio publicación (USD)",t:"number",money:true},
+      {k:"precio_objetivo",l:"Precio objetivo (USD)",t:"number"},
+      {k:"estado",l:"Estado",t:"select",o:["Captación","Activo","Re-activado","Reservado","Cerrado","Cancelado","Vencido"]},
+      {k:"exclusiva",l:"Exclusividad",t:"select",o:["Exclusiva","No exclusiva"]},
+      {k:"fecha_captacion",l:"Fecha de captación",t:"date"},
+      {k:"fecha_vencimiento",l:"Fecha de vencimiento",t:"date"},
+      {k:"proxima_accion",l:"Próxima acción",t:"text"},
+      {k:"baja_precio",l:"¿Tuvo baja de precio?",t:"select",o:["No","Sí"]},
+      {k:"descripcion",l:"Descripción / documentación faltante",t:"textarea"},
+    ]},
+  consultas: { title:"Consultas", columns:["fecha","id_propiedad","propiedad","cliente","telefono","mail","portal","compro","precio_pub","fecha_prox_accion","proxima_accion"],
+    fields:[
+      {k:"fecha",l:"Fecha",t:"date",req:true},
+      {k:"id_propiedad",l:"ID de propiedad (código)",t:"text",datalist:true},
+      {k:"propiedad",l:"Propiedad",t:"text"},
+      {k:"portal",l:"Portal",t:"select",o:["RE/MAX","Zonaprop","Argenprop","Facebook","Instagram","WhatsApp","Otro"]},
+      {k:"cliente",l:"Cliente",t:"text"},
+      {k:"telefono",l:"Teléfono",t:"text"},
+      {k:"mail",l:"Mail",t:"text"},
+      {k:"compro",l:"¿Compró?",t:"select",o:["Sí","No","En proceso"]},
+      {k:"precio_pub",l:"Precio publicado",t:"number",money:true},
+      {k:"fecha_prox_accion",l:"Fecha próxima acción",t:"date"},
+      {k:"proxima_accion",l:"Próxima acción",t:"text"},
+    ]},
+  ventas: { title:"Ventas", columns:["fecha","propiedad","cliente_vendedor","cliente_comprador","precio_venta","comision_agente"], sortBy:"fecha",
+    fields:[
+      {k:"propiedad",l:"Propiedad (código)",t:"text",req:true,datalist:true},
+      {k:"fecha",l:"Fecha",t:"date"},
+      {k:"precio_venta",l:"Precio venta (USD)",t:"number",money:true},
+      {k:"comision_pct",l:"Comisión inmobiliaria %",t:"number"},
+      {k:"punta_vendedora",l:"Punta vendedora",t:"select",o:["Sí","No"]},
+      {k:"punta_compradora",l:"Punta compradora",t:"select",o:["Sí","No"]},
+      {k:"comision_agente",l:"Comisión agente (USD)",t:"number",money:true},
+      {k:"tipo_operacion",l:"Boleto / Escritura",t:"select",o:["Boleto","Escritura"]},
+      {k:"cliente_vendedor",l:"Cliente vendedor",t:"text"},
+      {k:"cliente_comprador",l:"Cliente comprador",t:"text"},
+      {k:"proxima_accion",l:"Próxima acción",t:"text"},
+      {k:"detalle",l:"Detalle",t:"textarea"},
+    ]},
+  registro_diario: { title:"Registro Diario", columns:["fecha","cara_a_cara","llamados","visitas","reservas","cierres"],
+    fields:[
+      {k:"fecha",l:"Fecha",t:"date",req:true},
+      {k:"cara_a_cara",l:"Cara a cara",t:"number"},
+      {k:"llamados",l:"Llamados",t:"number"},
+      {k:"prelisting",l:"Pre-listing / Pre-buying",t:"number"},
+      {k:"captacion",l:"Captaciones",t:"number"},
+      {k:"visitas",l:"Visitas",t:"number"},
+      {k:"reservas",l:"Reservas",t:"number"},
+      {k:"cierres",l:"Cierres",t:"number"},
+      {k:"notas",l:"Notas",t:"textarea"},
+    ]},
+  registro_semanal: { title:"Registro Semanal", computed:"semanal" },
+  cartera: { title:"Cartera", computed:"cartera" },
+  agenda: { title:"Agenda", columns:["completado","fecha","hora","tipo","detalle","notas"], sortBy:"fecha", colorField:"tipo",
+    fields:[
+      {k:"completado",l:"Completado",t:"check"},
+      {k:"fecha",l:"Fecha",t:"date",req:true},
+      {k:"hora",l:"Hora",t:"time"},
+      {k:"tipo",l:"Actividad",t:"select",o:[...AGENDA_VERDE,...AGENDA_AMARILLO,...AGENDA_ROJO]},
+      {k:"detalle",l:"Cliente / Propiedad",t:"text"},
+      {k:"notas",l:"Notas",t:"textarea"},
+    ]},
+  planificacion: { title:"Planificación", columns:["concepto","mensual","anual","detalle"], totals:["mensual","anual"],
+    fields:[
+      {k:"concepto",l:"Concepto",t:"text",req:true},
+      {k:"mensual",l:"Mensual (USD)",t:"number"},
+      {k:"anual",l:"Anual (USD)",t:"number"},
+      {k:"detalle",l:"Detalle",t:"text"},
+    ]},
+  visitas: { title:"Visitas", columns:["fecha","propiedad","cliente","accion_siguiente","nueva_visita"], sortBy:"fecha",
+    fields:[
+      {k:"fecha",l:"Fecha",t:"date",req:true},
+      {k:"propiedad",l:"Propiedad visitada",t:"text",req:true},
+      {k:"ubicacion",l:"Ubicación",t:"text"},
+      {k:"cliente",l:"Cliente",t:"text"},
+      {k:"accion_siguiente",l:"Acción siguiente",t:"text"},
+      {k:"nueva_visita",l:"¿Solicitó nueva visita?",t:"select",o:["No","Sí"]},
+      {k:"observaciones",l:"Observaciones",t:"textarea"},
+    ]},
+  actividad: { title:"Actividad", computed:"actividad",
+    fields:[
+      {k:"propiedad_codigo",l:"Propiedad",t:"text",req:true},
+      ...PROCESOS.map((l,i)=>({k:"p"+(i+1), l, t:"check"})),
+    ]},
+};
+const KPI_COLS = ["cara_a_cara","llamados","prelisting","captacion","visitas","reservas","cierres"];
+const KPI_LABELS = {cara_a_cara:"Cara a cara",llamados:"Llamados",prelisting:"Pre-list/buy",captacion:"Captac.",visitas:"Visitas",reservas:"Reservas",cierres:"Cierres"};
+function isoWeekInfo(d){
+  const date=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day=(date.getUTCDay()+6)%7; date.setUTCDate(date.getUTCDate()-day+3);
+  const firstThu=new Date(Date.UTC(date.getUTCFullYear(),0,4));
+  const week=1+Math.round(((date-firstThu)/86400000-3+((firstThu.getUTCDay()+6)%7))/7);
+  const monday=new Date(d); monday.setDate(d.getDate()-((d.getDay()+6)%7));
+  const sunday=new Date(monday); sunday.setDate(monday.getDate()+6);
+  const f=x=>x.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"});
+  return {key:date.getUTCFullYear()+"-W"+week, week, del:f(monday), al:f(sunday)};
+}
+async function renderSemanal(){
+  tableWrap.innerHTML='<div class="empty">Calculando…</div>';
+  let docs=[];
+  try{ docs=await storage.list("registro_diario"); }catch(e){}
+  if(!docs.length){ tableWrap.innerHTML='<div class="empty">Cargá días en Registro Diario para ver el resumen semanal.</div>'; return; }
+  const weeks={};
+  docs.forEach(r=>{ if(!r.fecha) return; const info=isoWeekInfo(new Date(r.fecha+"T00:00:00"));
+    if(!weeks[info.key]) weeks[info.key]={...info, ...Object.fromEntries(KPI_COLS.map(c=>[c,0]))};
+    KPI_COLS.forEach(c=>weeks[info.key][c]+= Number(r[c])||0);
+  });
+  const list=Object.values(weeks).sort((a,b)=>b.key.localeCompare(a.key));
+  const head=`<th>Sem.</th><th>Del</th><th>Al</th>${KPI_COLS.map(c=>`<th>${KPI_LABELS[c]}</th>`).join("")}`;
+  const body=list.map(w=>`<tr><td>${w.week}</td><td>${w.del}</td><td>${w.al}</td>${KPI_COLS.map(c=>`<td>${w[c]}</td>`).join("")}</tr>`).join("");
+  tableWrap.innerHTML=`<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+function carteraEstado(p){
+  if(p.estado==="Cerrado") return "amarillo";
+  if(["Activo","Re-activado","Reservado","Captación"].includes(p.estado)){
+    if(p.fecha_vencimiento){
+      const dias=Math.ceil((new Date(p.fecha_vencimiento+"T00:00:00")-new Date())/86400000);
+      if(dias<=15) return "rojo";
+    }
+    return "verde";
+  }
+  return null;
+}
+const CARTERA_COLOR={verde:"#3fa34d",rojo:"#e0241a",amarillo:"#e6c229"};
+function diasHasta(fecha){ return Math.ceil((new Date(fecha+"T00:00:00")-new Date())/86400000); }
+function propEstadoColor(p){
+  if(p.estado==="Vencido") return CARTERA_COLOR.rojo;
+  if(["Activo","Re-activado","Reservado","Captación"].includes(p.estado)){
+    if(p.fecha_vencimiento){
+      const dias=diasHasta(p.fecha_vencimiento);
+      if(dias<0) return CARTERA_COLOR.rojo;
+      if(dias<=15) return CARTERA_COLOR.amarillo;
+    }
+    return CARTERA_COLOR.verde;
+  }
+  return null;
+}
+function superficieTxt(r){
+  const parts=[];
+  if(r.m2_terreno) parts.push(r.m2_terreno+" terr.");
+  if(r.m2_cubiertos) parts.push(r.m2_cubiertos+" cub.");
+  if(r.m2_semicubiertos) parts.push(r.m2_semicubiertos+" semi.");
+  if(r.m2_descubiertos) parts.push(r.m2_descubiertos+" desc.");
+  return parts.length? parts.join(" · ")+" m²" : "—";
+}
+function vencimientoTxt(r){
+  const c=propEstadoColor(r);
+  if(c===CARTERA_COLOR.amarillo) return `Próxima a vencer (${diasHasta(r.fecha_vencimiento)} días)`;
+  if(c===CARTERA_COLOR.rojo){
+    if(r.fecha_vencimiento){ const d=diasHasta(r.fecha_vencimiento); return d<0? `Vencida (hace ${Math.abs(d)} días)` : "Vencida"; }
+    return "Vencida";
+  }
+  return "—";
+}
+async function fillPropList(){
+  let props=[];
+  try{ props=await storage.list("propiedades"); }catch(e){}
+  $("#propList").innerHTML = props.filter(p=>p.codigo).map(p=>`<option value="${p.codigo}">${p.codigo} — ${p.direccion||""}</option>`).join("");
+}
+function diasVencerTxt(p){
+  if(!p.fecha_vencimiento) return "—";
+  const dias=Math.ceil((new Date(p.fecha_vencimiento+"T00:00:00")-new Date())/86400000);
+  return dias<0 ? "Vencida hace "+Math.abs(dias)+"d" : dias+" días";
+}
+async function renderCartera(){
+  tableWrap.innerHTML='<div class="empty">Calculando…</div>';
+  let props=[];
+  try{ props=await storage.list("propiedades"); }catch(e){}
+  const activas=props.filter(p=>["Activo","Re-activado"].includes(p.estado));
+  const avg=(arr,f)=>arr.length? Math.round(arr.reduce((s,x)=>s+(Number(f(x))||0),0)/arr.length):0;
+  const ticketProm=avg(activas.filter(p=>p.precio_publicacion), p=>p.precio_publicacion);
+  const conFecha=activas.filter(p=>p.fecha_captacion);
+  const diasProm=avg(conFecha, p=>Math.floor((Date.now()-new Date(p.fecha_captacion+"T00:00:00"))/86400000));
+  const conBaja=props.filter(p=>p.baja_precio==="Sí").length;
+  const porVencer=props.filter(p=>carteraEstado(p)==="rojo").length;
+  const cards=[
+    ["Activas",activas.length],
+    ["Próximas a vencer",porVencer],
+    ["Ticket prom. activas (USD)", ticketProm? "$"+ticketProm.toLocaleString("es-AR"):"—"],
+    ["Días prom. en mercado", conFecha.length? diasProm:"—"],
+    ["Con baja de precio", conBaja],
+    ["Total cargadas",props.length],
+  ];
+  const porTipo={};
+  activas.forEach(p=>{ const t=p.tipo||"Otro"; porTipo[t]=(porTipo[t]||0)+1; });
+  const tipoRows=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);
+  const listado=props.filter(p=>carteraEstado(p));
+  const rows2=listado.map(p=>{
+    const c=CARTERA_COLOR[carteraEstado(p)];
+    return `<tr><td><span class="dot" style="background:${c}"></span>${fmt(p.codigo)}</td><td>${fmt(p.direccion)}</td><td>${fmt(p.tipo)}</td><td>${p.precio_publicacion?"$"+Number(p.precio_publicacion).toLocaleString("es-AR"):"—"}</td><td>${fmt(p.estado)}</td><td>${diasVencerTxt(p)}</td><td>${fmt(p.proxima_accion)}</td><td>${fmt(p.propietario)}</td></tr>`;
+  }).join("");
+  tableWrap.innerHTML=`<div class="cards">${cards.map(([l,n])=>`<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`).join("")}</div>
+    <div style="padding:0 16px 12px;display:flex;gap:8px;flex-wrap:wrap">${tipoRows.map(([t,n])=>`<div class="stat" style="padding:8px 12px"><div class="n" style="font-size:16px">${n}</div><div class="l">${t}</div></div>`).join("")||'<div class="l" style="padding:8px">Sin propiedades activas cargadas.</div>'}</div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Código</th><th>Dirección</th><th>Tipo</th><th>Precio</th><th>Estado</th><th>Vence en</th><th>Próxima acción</th><th>Propietario</th></tr></thead><tbody>${rows2||'<tr><td colspan="8" class="empty">Sin datos.</td></tr>'}</tbody></table></div>`;
+}
+
+let db=null, currentTab="clientes", rows=[], editingId=null, actSelectedCodigo=null;
+const storage = {
+  async list(col){
+    if(db){ const snap=await db.collection(col).get(); return snap.docs.map(d=>({id:d.id, ...d.data()})); }
+    return JSON.parse(localStorage.getItem("crm_"+col)||"[]");
+  },
+  _save(col,list){ localStorage.setItem("crm_"+col, JSON.stringify(list)); },
+  async add(col,data){
+    if(db) return db.collection(col).add(data);
+    const list=await storage.list(col);
+    const id="id"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    list.push({id,...data}); storage._save(col,list);
+  },
+  async update(col,id,data){
+    if(db) return db.collection(col).doc(id).update(data);
+    const list=await storage.list(col);
+    const i=list.findIndex(x=>x.id===id);
+    if(i>-1){ list[i]={...list[i],...data}; storage._save(col,list); }
+  },
+  async remove(col,id){
+    if(db) return db.collection(col).doc(id).delete();
+    storage._save(col, (await storage.list(col)).filter(x=>x.id!==id));
+  }
+};
+
+async function renderActividad(){
+  tableWrap.innerHTML='<div class="empty">Cargando…</div>';
+  let props=[], acts=[];
+  try{ props=await storage.list("propiedades"); }catch(e){}
+  try{ acts=await storage.list("actividad"); }catch(e){}
+  const activas=props.filter(p=>["Activo","Re-activado"].includes(p.estado) && p.codigo)
+    .sort((a,b)=>String(a.direccion||"").localeCompare(String(b.direccion||"")));
+  if(!activas.length){ tableWrap.innerHTML='<div class="empty">No hay propiedades activas cargadas (cargalas en la solapa Propiedades).</div>'; return; }
+  if(!actSelectedCodigo || !activas.some(p=>p.codigo===actSelectedCodigo)) actSelectedCodigo=activas[0].codigo;
+  const steps=SCHEMAS.actividad.fields.filter(f=>f.k!=="propiedad_codigo");
+  const recFor=cod=>acts.find(a=>a.propiedad_codigo===cod);
+  const rec=recFor(actSelectedCodigo);
+  const done=rec? steps.filter(f=>rec[f.k]==="Sí").length : 0;
+  const options=activas.map(p=>{
+    const r=recFor(p.codigo); const d=r? steps.filter(f=>r[f.k]==="Sí").length : 0;
+    return `<option value="${p.codigo}" ${p.codigo===actSelectedCodigo?"selected":""}>${p.codigo} — ${p.direccion||"s/dirección"} (${d}/${steps.length})</option>`;
+  }).join("");
+  const rowsHtml=steps.map(f=>{
+    const checked = rec && rec[f.k]==="Sí";
+    return `<label class="checkrow ${checked?"done":""}"><input type="checkbox" ${checked?"checked":""} onchange="toggleActividad('${f.k}',this.checked)"><span>${f.l}</span></label>`;
+  }).join("");
+  tableWrap.innerHTML=`<div style="padding:14px 16px 0">
+      <select id="actSel" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-size:14px;margin-bottom:10px">${options}</select>
+      <div class="l" style="margin-bottom:10px">Avance: <strong>${done}/${steps.length}</strong></div>
+    </div>
+    <div style="padding:0 16px 20px">${rowsHtml}</div>`;
+  $("#actSel").onchange=e=>{ actSelectedCodigo=e.target.value; renderActividad(); };
+}
+window.toggleActividad=async function(key,checked){
+  let acts=[];
+  try{ acts=await storage.list("actividad"); }catch(e){}
+  const rec=acts.find(a=>a.propiedad_codigo===actSelectedCodigo);
+  try{
+    if(rec){ await storage.update("actividad", rec.id, {[key]: checked?"Sí":"No"}); }
+    else{ await storage.add("actividad", {propiedad_codigo:actSelectedCodigo,[key]: checked?"Sí":"No"}); }
+  }catch(e){}
+  renderActividad();
+};
+
+const $=s=>document.querySelector(s);
+const tabsEl=$("#tabs"), tableWrap=$("#tableWrap"), statusEl=$("#status");
+
+function buildTabs(){
+  tabsEl.innerHTML="";
+  Object.keys(SCHEMAS).forEach(key=>{
+    const b=document.createElement("button");
+    b.textContent=SCHEMAS[key].title;
+    b.className=key===currentTab?"active":"";
+    b.onclick=()=>{currentTab=key; buildTabs(); loadTab();};
+    tabsEl.appendChild(b);
+  });
+}
+
+async function loadTab(){
+  const schema=SCHEMAS[currentTab];
+  document.querySelector(".toolbar").style.display = schema.computed ? "none" : "flex";
+  $("#hideDoneWrap").style.display = currentTab==="agenda" ? "flex" : "none";
+  tableWrap.innerHTML='<div class="empty">Cargando…</div>';
+  statusEl.textContent = db ? "" : "Guardando en este navegador (modo local).";
+  statusEl.textContent="";
+  if(schema.computed==="semanal") return renderSemanal();
+  if(schema.computed==="cartera") return renderCartera();
+  if(schema.computed==="actividad") return renderActividad();
+  try{
+    rows = await storage.list(currentTab);
+    if(schema.sortBy) rows.sort((a,b)=>String(a[schema.sortBy]||"").localeCompare(String(b[schema.sortBy]||"")));
+  }catch(e){ rows=[]; statusEl.textContent="No se pudieron cargar los datos."; }
+  renderTable(rows);
+}
+
+function renderTable(list){
+  const schema = SCHEMAS[currentTab];
+  const cols = schema.columns;
+  const q = $("#search").value.trim().toLowerCase();
+  let filtered = q ? list.filter(r=>cols.some(c=>String(r[c]||"").toLowerCase().includes(q))) : list;
+  if(currentTab==="agenda" && $("#hideDone").checked) filtered = filtered.filter(r=>r.completado!=="Sí");
+  if(!filtered.length){ tableWrap.innerHTML='<div class="empty">No hay registros todavía.</div>'; return; }
+  const head = cols.map(c=>`<th>${label(c)}</th>`).join("");
+  const body = filtered.map(r=>`<tr onclick="openForm('${r.id}')" style="${r.completado==='Sí'?'opacity:.5':''}">${cols.map(c=>{
+    if(c==="completado") return `<td onclick="event.stopPropagation()"><input type="checkbox" ${r.completado==="Sí"?"checked":""} onchange="toggleCompletado('${r.id}',this.checked)"></td>`;
+    const fdef = schema.fields.find(f=>f.k===c);
+    let v = c==="_progreso" ? progreso(r) : c==="_superficie" ? superficieTxt(r) : c==="_vencimiento" ? vencimientoTxt(r) : (fdef&&fdef.money ? moneyFmt(r[c]) : fmt(r[c]));
+    if(schema.colorField===c && r[c]){
+      const hex = schema.colorFn ? schema.colorFn(r) : actColor(r[c]);
+      if(hex) v = `<span class="dot" style="background:${hex}"></span>${v}`;
+    }
+    return `<td>${v}</td>`;
+  }).join("")}</tr>`).join("");
+  let foot="";
+  if(schema.totals){
+    const cells=cols.map((c,i)=> schema.totals.includes(c)
+      ? filtered.reduce((s,r)=>s+(Number(r[c])||0),0).toLocaleString("es-AR")
+      : (i===0?"Total":""));
+    foot=`<tfoot><tr>${cells.map(c=>`<td>${c}</td>`).join("")}</tr></tfoot>`;
+  }
+  tableWrap.innerHTML = `<table><thead>${groupHeadRow(schema)}<tr>${head}</tr></thead><tbody>${body}</tbody>${foot}</table>` + (currentTab==="ventas" ? ventasTotalsHtml(rows) : "");
+}
+function groupHeadRow(schema){
+  if(!schema.groupLabels) return "";
+  return "<tr>"+schema.groupLabels.map((l,i)=>`<th colspan="${schema.groupSpans[i]}" class="grouphead ${l==="Comprador"?"g-comprador":l==="Vendedor"?"g-vendedor":""}">${l}</th>`).join("")+"</tr>";
+}
+function moneyFmt(v){ if(v===undefined||v===null||v==="") return "—"; return Number(v).toLocaleString("es-AR"); }
+function ventasTotalsHtml(list){
+  const porMes={}, porAnio={};
+  list.forEach(r=>{
+    if(!r.fecha) return;
+    const key=r.fecha.slice(0,7), anio=r.fecha.slice(0,4);
+    if(!porMes[key]) porMes[key]={venta:0,comision:0,cant:0};
+    porMes[key].venta+=Number(r.precio_venta)||0;
+    porMes[key].comision+=Number(r.comision_agente)||0;
+    porMes[key].cant++;
+    if(!porAnio[anio]) porAnio[anio]={venta:0,comision:0,cant:0};
+    porAnio[anio].venta+=Number(r.precio_venta)||0;
+    porAnio[anio].comision+=Number(r.comision_agente)||0;
+    porAnio[anio].cant++;
+  });
+  const meses=Object.keys(porMes).sort();
+  const anios=Object.keys(porAnio).sort();
+  if(!meses.length) return "";
+  const filasMes=meses.map(m=>{
+    const d=porMes[m]; const [y,mo]=m.split("-");
+    const nombre=new Date(Number(y),Number(mo)-1,1).toLocaleDateString("es-AR",{month:"long",year:"numeric"});
+    return `<tr><td>${nombre}</td><td>${d.cant}</td><td>${d.venta.toLocaleString("es-AR")}</td><td>${d.comision.toLocaleString("es-AR")}</td></tr>`;
+  }).join("");
+  const filasAnio=anios.map(a=>{
+    const d=porAnio[a];
+    return `<tr><td>${a}</td><td>${d.cant}</td><td>${d.venta.toLocaleString("es-AR")}</td><td>${d.comision.toLocaleString("es-AR")}</td></tr>`;
+  }).join("");
+  const totVenta=meses.reduce((s,m)=>s+porMes[m].venta,0), totCom=meses.reduce((s,m)=>s+porMes[m].comision,0), totCant=meses.reduce((s,m)=>s+porMes[m].cant,0);
+  return `<div style="padding:18px 12px 4px;font-weight:600;font-size:13px">Totales por mes</div>
+  <table><thead><tr><th>Mes</th><th>Ventas</th><th>Monto total (USD)</th><th>Comisión agente (USD)</th></tr></thead>
+  <tbody>${filasMes}</tbody>
+  <tfoot><tr><td>Total</td><td>${totCant}</td><td>${totVenta.toLocaleString("es-AR")}</td><td>${totCom.toLocaleString("es-AR")}</td></tr></tfoot></table>
+  <div style="padding:18px 12px 4px;font-weight:600;font-size:13px">Totales por año</div>
+  <table><thead><tr><th>Año</th><th>Ventas</th><th>Monto total (USD)</th><th>Comisión agente (USD)</th></tr></thead>
+  <tbody>${filasAnio}</tbody></table>`;
+}
+window.toggleCompletado=async function(id,checked){
+  try{ await storage.update("agenda", id, {completado: checked?"Sí":"No"}); }catch(e){}
+  loadTab();
+};
+function label(k){ if(k==="_progreso") return "Avance"; if(k==="completado") return "✓"; if(k==="_superficie") return "Superficie"; if(k==="_vencimiento") return "Vence en"; const f=SCHEMAS[currentTab].fields.find(f=>f.k===k); return f?f.l:k; }
+function fmt(v){ if(v===undefined||v===null||v==="") return "—"; const s=String(v); return s.length>60 ? s.slice(0,60)+"…" : s; }
+
+$("#search").addEventListener("input", ()=>renderTable(rows));
+$("#hideDone").addEventListener("change", ()=>renderTable(rows));
+
+function openForm(id){
+  editingId=id||null;
+  const schema = SCHEMAS[currentTab];
+  $("#modalTitle").textContent = editingId ? "Editar "+schema.title.slice(0,-1) : "Nuevo "+schema.title.slice(0,-1);
+  const rec = editingId ? rows.find(r=>r.id===editingId) || {} : {};
+  if(!editingId && currentTab==="propiedades" && !rec.codigo){
+    rec.codigo = "PROP-"+String(rows.length+1).padStart(4,"0");
+  }
+  const form = $("#form");
+  form.innerHTML = schema.fields.map(f=>{
+    const val = rec[f.k]!==undefined ? rec[f.k] : "";
+    if(f.t==="check"){
+      return `<label class="checkrow ${val==='Sí'?'done':''}"><input type="checkbox" name="${f.k}" ${val==='Sí'?'checked':''} oninput="this.closest('label').classList.toggle('done',this.checked)"><span>${f.l}</span></label>`;
+    }
+    if(f.t==="select"){
+      return `<div class="field"><label>${f.l}</label><select name="${f.k}">
+        <option value="">—</option>
+        ${f.o.map(o=>`<option value="${o}" ${o===val?"selected":""}>${o}</option>`).join("")}
+      </select></div>`;
+    }
+    if(f.t==="textarea"){
+      return `<div class="field"><label>${f.l}</label><textarea name="${f.k}">${val}</textarea></div>`;
+    }
+    return `<div class="field"><label>${f.l}</label><input type="${f.t}" name="${f.k}" value="${val}" ${f.req?"required":""} ${f.datalist?'list="propList"':""}></div>`;
+  }).join("");
+  if(schema.fields.some(f=>f.datalist)) fillPropList();
+  $("#deleteBtn").style.display = editingId ? "inline-block" : "none";
+  $("#gcalBtn").style.display = currentTab==="agenda" ? "inline-block" : "none";
+  $("#modalBg").classList.add("show");
+}
+$("#addBtn").onclick=()=>openForm(null);
+$("#gcalBtn").onclick=()=>{
+  const fd=new FormData($("#form"));
+  const fecha=fd.get("fecha"); if(!fecha){ alert("Completá la fecha primero."); return; }
+  const hora=fd.get("hora");
+  const titulo=[fd.get("tipo"),fd.get("detalle")].filter(Boolean).join(": ")||"Evento";
+  const d=fecha.replace(/-/g,"");
+  let dates;
+  if(hora){
+    const [h,m]=hora.split(":");
+    const start=d+"T"+h+m+"00";
+    const endD=new Date(fecha+"T"+hora+":00"); endD.setHours(endD.getHours()+1);
+    const end=endD.getFullYear()+String(endD.getMonth()+1).padStart(2,"0")+String(endD.getDate()).padStart(2,"0")+"T"+String(endD.getHours()).padStart(2,"0")+String(endD.getMinutes()).padStart(2,"0")+"00";
+    dates=start+"/"+end;
+  }else{
+    const nd=new Date(fecha+"T00:00:00"); nd.setDate(nd.getDate()+1);
+    const end=nd.getFullYear()+String(nd.getMonth()+1).padStart(2,"0")+String(nd.getDate()).padStart(2,"0");
+    dates=d+"/"+end;
+  }
+  const url=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(titulo)}&dates=${dates}&details=${encodeURIComponent(fd.get("notas")||"")}`;
+  window.open(url,"_blank");
+};
+$("#cancelBtn").onclick=()=>$("#modalBg").classList.remove("show");
+$("#modalBg").onclick=(e)=>{ if(e.target.id==="modalBg") $("#modalBg").classList.remove("show"); };
+
+$("#form").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const data={};
+  const fields=SCHEMAS[currentTab].fields;
+  new FormData(e.target).forEach((v,k)=>{ data[k]= (fields.find(f=>f.k===k)?.t==="number" && v!=="") ? Number(v) : v; });
+  fields.filter(f=>f.t==="check").forEach(f=>{ if(!(f.k in data)) data[f.k]="No"; });
+  try{
+    if(editingId){ await storage.update(currentTab, editingId, data); }
+    else{ await storage.add(currentTab, data); }
+    if(!editingId && currentTab==="agenda" && data.tipo==="Visitas"){
+      try{ await storage.add("visitas", {fecha:data.fecha, propiedad:data.detalle||"", ubicacion:"", cliente:"", accion_siguiente:"", nueva_visita:"No", observaciones:data.notas||""}); }catch(e){}
+    }
+    $("#modalBg").classList.remove("show");
+    loadTab();
+  }catch(err){ statusEl.textContent="No se pudo guardar el registro."; }
+});
+
+$("#deleteBtn").onclick=async()=>{
+  if(!editingId) return;
+  if(!confirm("¿Eliminar este registro?")) return;
+  try{ await storage.remove(currentTab, editingId); }catch(e){}
+  $("#modalBg").classList.remove("show");
+  loadTab();
+};
+
+(async function init(){
+  buildTabs();
+  try{ db = await claude.use("db"); }catch(e){ db=null; }
+  loadTab();
+})();
+</script>
+</body>
+</html>
